@@ -1,0 +1,204 @@
+
+- All communication is assumed to be from STAs to AP.
+- AP is assumed to be fixed at coordinates at the center of the scenario.
+- Groups are determined by array groups, which is indexed by STA id and can
+change dinamically.
+- All times are in us to avoid issues with float point precision.
+
+##
+List of the events found on the output log and their formats. Notice that not
+all events are logged by default. You may have to increase verbosity in order
+to get those.
+
+# Entry of the received power matrix.
+  - 'idS' is the link's source node id.
+  - 'idD' is the link's destination node id.
+  - 'val' is the value of the received power in that link in dBm.
+PM idS -> idD @ val
+
+# New packet generated at the application layer.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ + now _id_ pktId
+
+# Transmission of an application layer packet is defered until the source node's group next slot.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'timeToGroup' is the time, in us, until the begining of the next slot assigned to the source node's group.
+ D now _id_ pktId timeToGroup
+
+# Transmission of an application layer packet will be attempted within the source node's group current slot.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'endOfSlot' is the time instant, in us, at which the source node's group current slot will end.
+ G now _id_ pktId endOfSlot
+
+# A new value has been randomly selected from the contention window for the backoff counter.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'backoffValue' is the randomly selected value for the backoff counter.
+ Cw now _id_ pktId backoffValue
+
+# Transmission of an application layer packet will be aborted due to the expiration of the current slot of the source node's group.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ A now _id_ pktId
+
+# Medium is busy and the transmitter has begun to wait for it to become idle again.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Ms now _id_ pktId
+
+# Transmitter was waiting for the medium to become idle and it has.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Mi now _id_ pktId
+
+# Transmitter has begun to wait for the medium to remain idle for DIFS.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ MDs now _id_ pktId
+
+# While waiting for DIFS, the medium has become busy.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ MDi now _id_ pktId
+
+# Transmitter has successfully finished waiting for DIFS.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ MDo now _id_ pktId
+
+# Transmitter has begun decrementing the backoff counter.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'backoffValue' is the current value of the backoff counter.
+ Bs now _id_ pktId backoffValue
+
+# Backoff count down has been interrupted. Might indicate both that the medium has become busy, or that the counter has zeroed.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Bi now _id_ pktId
+
+# Backoff count down is now over.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Bo now _id_ pktId
+
+# Transmission of the packet through the wireless link is over (including ack) and it was successful.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ S now _id_ pktId
+
+# The wait for an ack has timed out. Transmission attempt has been unsuccessful.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Ato now _id_ pktId [ack]
+
+# Transmission of the packet through the wireless link is over (including ack) and it was unsuccessful. The link layer has given up due to excessive number of failed retries. This application layer packet is definitely lost (at least that is how the transmitter sees it).
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ D now _id_ pktId
+
+# The actual transmission of the packet (i.e., the insertion of the bits in the wireless link) has begun.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Ts now _id_ pktId
+
+# The actual transmission of the packet (i.e., the insertion of the bits in the wireless link) is over.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ To now _id_ pktId
+
+# The total amount of energy received by this node's wireless interface has been increased.
+  - 'id' is the id of the node that generated that packet
+  - 'oldValue' total amount of power in dBm received at the interface before this increase.
+  - 'newValue' total amount of power in dBm received at the interface after this increase.
+  - 'nCurrentTransmitters' number of currently active transmitters
+ Ei now _id_ oldValue -> newValue [ nCurrentTransmitters ]
+
+# The total amount of energy received by this node's wireless interface has been decreased.
+  - 'id' is the id of the node that generated that packet
+  - 'oldValue' total amount of power in dBm received at the interface before this decrease.
+  - 'newValue' total amount of power in dBm received at the interface after this decrease.
+  - 'nCurrentTransmitters' number of currently active transmitters
+ Ed now _id_ oldValue -> newValue [ nCurrentTransmitters ]
+
+# The actual reception of the packet (i.e., the retrieval of the bits in the wireless link) has begun.
+  - 'id' is the id of the node that is receiving that packet
+  - 'from' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Rs now _id_ _from_ pktId
+
+# The actual reception of the packet (i.e., the retrieval of the bits in the wireless link) is over.
+  - 'id' is the id of the node that is receiving that packet
+  - 'from' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Ro now _id_ _from_ pktId
+
+# The Packet Error Rate for the packet under reception has been calculated.
+  - 'id' is the id of the node that is receiving that packet
+  - 'from' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'per' the value of the packet error rate for that transmission.
+ PER now _id_ _from_ pktId per
+
+# The data frame reception has failed due to low SINR.
+  - 'id' is the id of the node that is receiving that packet
+  - 'from' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'SimTransmitters' maximum number of simultaneous transmissions during the reception attempt
+ d now _id_ _from_ pktId SimTransmitters
+
+# The data frame reception has been successful.
+  - 'id' is the id of the node that is receiving that packet
+  - 'from' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'SimTransmitters' maximum number of simultaneous transmissions during the reception attempt
+ r now _id_ _from_ pktId SimTransmitters
+
+# Before transmitting an ack, the received has just started to wait for SIFS
+  - 'id' is the id of the node that is receiving that packet
+  - 'from' is the id of the node that generated that packet
+  - 'pktId' is the id of the correspondent data packet (which starts at 0 and is incremented monotonically and independently for each node).
+ MS now _id_ _from_ pktId [ack]
+
+# The actual transmission of the ack (i.e., the insertion of the bits in the wireless link) has begun.
+  - 'id' is the id of the node that is receiving that packet
+  - 'from' is the id of the node that generated that packet
+  - 'pktId' is the id of the correspondent data packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Ts now _id_ _from_ pktId [ack]
+
+# The actual transmission of the ack (i.e., the insertion of the bits in the wireless link) is over.
+  - 'id' is the id of the node that is receiving that packet
+  - 'from' is the id of the node that generated that packet
+  - 'pktId' is the id of the correspondent data packet (which starts at 0 and is incremented monotonically and independently for each node).
+ To now _id_ _from_ pktId [ack]
+
+# The actual reception of the ack (i.e., the retrieval of the bits in the wireless link) has begun.
+  - 'id' is the id of the node that generated that packet
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Rs now _id_ pktId [ack]
+
+# The actual reception of the ack (i.e., the retrieval of the bits in the wireless link) is over.
+  - 'id' is the id of the node that generated the correspondent data packet
+  - 'pktId' is the id of the correspondent data packet (which starts at 0 and is incremented monotonically and independently for each node).
+ Ro now _id_ pktId [ack]
+
+# The Packet Error Rate for the ack under reception has been calculated.
+  - 'id' is the id of the node that generated the correspondent data packett
+  - 'pktId' is the id of the packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'per' the value of the packet error rate for that transmission.
+ PER now _id_ pktId per [ack]
+
+# The ack frame reception has failed due to low SINR.
+  - 'id' is the id of the node that generated the correspondent data packet
+  - 'pktId' is the id of the correspondent data packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'SimTransmitters' maximum number of simultaneous transmissions during the reception attempt
+ d now _id_ pktId [ack] SimTransmitters
+
+# The ack frame reception has been successful.
+  - 'id' is the id of the node that generated the correspondent data packet
+  - 'pktId' is the id of the correspondent data packet (which starts at 0 and is incremented monotonically and independently for each node).
+  - 'SimTransmitters' maximum number of simultaneous transmissions during the reception attempt
+ r now _id_ pktId [ack] SimTransmitters
